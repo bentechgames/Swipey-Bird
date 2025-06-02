@@ -1,0 +1,447 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipey Bird</title>
+    <style>
+        @font-face {
+            font-family: 'Pixeled';
+            src: url('Pixeled.ttf') format('truetype');
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Pixeled', monospace;
+            background: #70C5CE;
+            touch-action: none;
+            user-select: none;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #70C5CE;
+            image-rendering: pixelated;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .title-screen {
+            background: rgba(0, 0, 0, 0.8);
+            color: #FFF;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+        
+        .title {
+            font-size: 48px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #000;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #FFF;
+        }
+        
+        .start-button {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            border: 2px solid #D2691E;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Pixeled', monospace;
+            cursor: pointer;
+            border-radius: 8px;
+            text-shadow: 1px 1px 0px #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.1s ease;
+        }
+        
+        .start-button:hover {
+            background: linear-gradient(135deg, #FF7B45 0%, #F8A31E 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .start-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .get-ready-screen {
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFF;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+        
+        .ready-text {
+            background-image: url('Get_ready_screen_text.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 200px;
+            height: 60px;
+            margin: 0 auto 20px auto;
+            text-indent: -9999px;
+        }
+        
+        .instruction {
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #FFF;
+            line-height: 1.5;
+        }
+        
+        .swipe-button {
+            background: #FF3333;
+            color: #FFF;
+            border: 2px solid #AA0000;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-family: 'Pixeled', monospace;
+            text-align: center;
+            border-radius: 4px;
+            margin: 0 auto;
+            width: 120px;
+            text-shadow: 1px 1px 0px #000;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 1px 0 0 rgba(255,255,255,0.1),
+                inset -1px 0 0 rgba(0,0,0,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.3);
+            animation: pulse 1s infinite;
+            image-rendering: pixelated;
+            filter: contrast(1.2);
+        }
+        
+        .game-over-screen {
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFF;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+        
+        .game-over-text {
+            background-image: url('Game_over_screen_text.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 250px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+            text-indent: -9999px;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #FFF;
+        }
+        
+        .retry-button {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            border: 2px solid #D2691E;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Pixeled', monospace;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-right: 10px;
+            text-shadow: 1px 1px 0px #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.1s ease;
+        }
+        
+        .retry-button:hover {
+            background: linear-gradient(135deg, #FF7B45 0%, #F8A31E 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .retry-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            color: #FFF;
+            text-shadow: 2px 2px 0px #000;
+            z-index: 5;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .logo-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .logo-screen .logo {
+            font-size: 64px;
+            text-align: center;
+        }
+        
+        .logo-screen .ben {
+            color: white;
+        }
+        
+        .logo-screen .tech {
+            color: #FF0000;
+        }
+        
+        .pause-screen {
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFF;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+        
+        .pause-text {
+            font-size: 48px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #000;
+        }
+        
+        .pause-instruction {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #FFF;
+        }
+        
+        .pause-score {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #FFF;
+        }
+        
+        .game-over-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .share-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+            color: white;
+            border: 2px solid #3D8B40;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Pixeled', monospace;
+            cursor: pointer;
+            border-radius: 8px;
+            text-shadow: 1px 1px 0px #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.1s ease;
+        }
+        
+        .share-button:hover {
+            background: linear-gradient(135deg, #5CCC60 0%, #55A059 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .share-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .skins-screen {
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFF;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .skins-title {
+            font-size: 36px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #000;
+        }
+        
+        .skin-selector {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .arrow-btn {
+            background: #FFF;
+            color: #000;
+            border: none;
+            width: 50px;
+            height: 50px;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .arrow-btn:hover {
+            opacity: 1;
+        }
+        
+        .skin-preview {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .skin-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .skin-name {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        
+        .unlock-hint {
+            font-size: 16px;
+            color: #AAA;
+            margin-top: 10px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-screen" id="logoScreen">
+        <div class="logo">
+            <span class="ben">BEN</span><span class="tech">TECH</span>
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="score hidden" id="score">0</div>
+    
+    <div class="ui-overlay" id="uiOverlay">
+        <div class="title-screen" id="titleScreen">
+            <div class="title">SWIPEY BIRD</div>
+            <div class="subtitle">Swipe to control the bird through the pipes!</div>
+            <button class="start-button" onclick="showGetReady()">START GAME</button>
+            <button class="start-button" onclick="showHowToPlay()" style="margin-top: 10px;">HOW TO PLAY</button>
+        </div>
+        
+        <div class="get-ready-screen hidden" id="getReadyScreen">
+            <div class="ready-text">GET READY!</div>
+            <div class="instruction">
+                Swipe UP and DOWN to control the bird<br>
+                Avoid the pipes and get the highest score!
+            </div>
+            <div class="swipe-button">SWIPE</div>
+        </div>
+        
+        <div class="pause-screen hidden" id="pauseScreen">
+            <div class="pause-text">PAUSED</div>
+            <div class="pause-instruction">
+                Keep swiping to continue playing
+            </div>
+            <div class="pause-score" id="pauseScore">Current Score: 0</div>
+        </div>
+        
+        <div class="game-over-screen hidden" id="gameOverScreen">
+            <div class="game-over-text">GAME OVER</div>
+            <div class="score-display" id="finalScore">Score: 0</div>
+            <div class="high-score-display" id="highScore">High Score: 0</div>
+            <div class="game-over-buttons">
+                <button class="retry-button" onclick="showGetReady()">RETRY</button>
+                <button class="start-button" onclick="showTitle()">MENU</button>
+                <button class="share-button" onclick="window.game.shareScore()">SHARE</button>
+            </div>
+        </div>
+        
+        <div class="skins-screen hidden" id="skinsScreen">
+            <div class="skins-title">BIRD SKINS</div>
+            <div class="skin-selector">
+                <button class="arrow-btn" id="prevSkinBtn">&lt;</button>
+                <div class="skin-preview" id="skinPreview">
+                    <img id="currentSkinImg" src="bird.png" alt="Current Skin">
+                </div>
+                <button class="arrow-btn" id="nextSkinBtn">&gt;</button>
+            </div>
+            <div class="skin-name" id="skinName">Default Bird</div>
+            <div class="unlock-hint" id="skinUnlockHint"></div>
+            <button class="start-button" onclick="selectSkin()">SELECT</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoScreen = document.getElementById('logoScreen');
+            setTimeout(() => {
+                logoScreen.style.display = 'none';
+            }, 2000);  // Logo stays for 2 seconds
+        });
+        
+        window.addEventListener('load', () => {
+            window.game = new SwipeyBird();
+        });
+    </script>
+</body>
+</html>
