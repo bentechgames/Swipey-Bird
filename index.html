@@ -234,6 +234,14 @@
             color: #FF0000;
         }
         
+        .logo-screen .tagline {
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+            font-family: 'Pixeled', monospace;
+        }
+        
         .pause-screen {
             background: rgba(0, 0, 0, 0.9);
             color: #FFF;
@@ -363,6 +371,12 @@
             margin-top: 10px;
         }
         
+        .rank-display {
+            font-size: 18px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -373,6 +387,7 @@
     <div class="logo-screen" id="logoScreen">
         <div class="logo">
             <span class="ben">BEN</span><span class="tech">TECH</span>
+            <div class="tagline">Fun Games that don't break the bank</div>
         </div>
     </div>
     <canvas id="gameCanvas"></canvas>

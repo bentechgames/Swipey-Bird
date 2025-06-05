@@ -5,6 +5,7 @@ class SwipeyBird {
         
         // Initialize bird properties first
         this.bird = {
+            name: 'Swipey',
             x: 0,
             y: 0,
             width: 50,
@@ -43,24 +44,29 @@ class SwipeyBird {
         // Skin management
         this.availableSkins = [
             { 
-                name: 'Yellow Bird', 
+                name: 'Swipey (Yellow)', 
                 image: 'bird.png', 
                 unlockScore: 0 
             },
             { 
-                name: 'Blue Bird', 
+                name: 'Sparky (Blue)', 
                 image: 'bird_3.png', 
                 unlockScore: 0 
             },
             { 
-                name: 'Green Bird', 
+                name: 'Swifter (Green)', 
                 image: 'bird_2.png', 
                 unlockScore: 0 
             },
             { 
-                name: 'Cool Bird', 
+                name: 'Cool Swipey', 
                 image: 'cool_bird.png', 
                 unlockScore: 50  // Paid/high-score skin
+            },
+            { 
+                name: 'Goober', 
+                image: 'Goober.png', 
+                unlockScore: 75  // High-score unlock
             }
         ];
         this.currentSkinIndex = 0;
@@ -88,6 +94,14 @@ class SwipeyBird {
         
         // Add death sound
         this.deathSound = new Audio('death.mp3');
+        
+        // Ranking system
+        this.ranks = [
+            { name: 'Bronze', minScore: 0, color: '#CD7F32' },
+            { name: 'Silver', minScore: 10, color: '#C0C0C0' },
+            { name: 'Gold', minScore: 25, color: '#FFD700' },
+            { name: 'Platinum', minScore: 50, color: '#E5E4E2' }
+        ];
     }
     
     loadImages() {
@@ -99,7 +113,8 @@ class SwipeyBird {
             'Get_ready_screen_swipe_tag.png',
             'Get_ready_screen_text.png',
             'Game_over_screen_text.png',
-            'cool_bird.png'
+            'cool_bird.png',
+            'Goober.png'
         ];
         
         let loadedCount = 0;
@@ -124,6 +139,12 @@ class SwipeyBird {
             img.src = skin.image;
             this.skins[skin.image] = img;
         });
+        
+        // Load saved skin selection
+        const savedSkin = localStorage.getItem('swipeyBirdSelectedSkin');
+        if (savedSkin !== null) {
+            this.currentSkinIndex = parseInt(savedSkin);
+        }
     }
     
     setupEventListeners() {
@@ -429,6 +450,9 @@ class SwipeyBird {
     }
     
     gameOver() {
+        // Determine player's rank
+        const playerRank = this.determineRank(this.score);
+
         // Play death sound
         this.deathSound.play();
         
@@ -440,9 +464,37 @@ class SwipeyBird {
         
         this.gameState = 'gameOver';
         document.getElementById('score').classList.add('hidden');
-        document.getElementById('finalScore').textContent = `Score: ${this.score}`;
+        
+        // Update game over screen with rank
+        document.getElementById('finalScore').innerHTML = `
+            Score: ${this.score} 
+            <div style="font-size: 18px; color: ${playerRank.color};">
+                Rank: ${playerRank.name}
+            </div>
+        `;
         document.getElementById('highScore').textContent = `High Score: ${this.highScore}`;
         document.getElementById('gameOverScreen').classList.remove('hidden');
+    }
+    
+    determineRank(score) {
+        // Only start ranking at 10 points
+        if (score < 10) {
+            return { name: 'Unranked', color: '#888888' };
+        }
+
+        // New ranking system
+        if (score >= 10 && score < 20) {
+            return { name: 'Bronze', color: '#CD7F32' };
+        } else if (score >= 20 && score < 30) {
+            return { name: 'Silver', color: '#C0C0C0' };
+        } else if (score >= 30 && score < 40) {
+            return { name: 'Gold', color: '#FFD700' };
+        } else if (score >= 40) {
+            return { name: 'Platinum', color: '#E5E4E2' };
+        }
+        
+        // Fallback to default rank
+        return { name: 'Unranked', color: '#888888' };
     }
     
     updateScore() {
@@ -450,7 +502,19 @@ class SwipeyBird {
     }
     
     shareScore() {
-        const message = `I scored ${this.score} in Swipey Bird, it isn't as simple as the other Flappy games, you must swipe up and down to control the bird`;
+        // Determine player's rank
+        const playerRank = this.determineRank(this.score);
+
+        // Construct message with conditional rank
+        let message = `I scored ${this.score} in Swipey Bird, it isn't as simple as the other Flappy games, you must swipe up and down to control the bird`;
+        
+        // Add rank if not unranked
+        if (playerRank.name !== 'Unranked') {
+            message += ` and achieved ${playerRank.name} rank!`;
+        }
+
+        // Add download link
+        message += ` Download the game: bentechgames.wordpress.com/getgameid1`;
         
         if (navigator.share) {
             navigator.share({
@@ -580,11 +644,14 @@ class SwipeyBird {
     selectSkin() {
         const currentSkin = this.availableSkins[this.currentSkinIndex];
         
-        // Only restrict paid/special skins
+        // Check if skin is locked before proceeding
         if (currentSkin.unlockScore > this.highScore) {
             alert(`Unlock this skin by scoring ${currentSkin.unlockScore} points!`);
-            return;
+            return; // Don't remove skins screen, just show alert
         }
+        
+        // Save the selected skin
+        localStorage.setItem('swipeyBirdSelectedSkin', this.currentSkinIndex);
         
         // Hide skins screen and return to title
         document.getElementById('skinsScreen').classList.add('hidden');
@@ -722,6 +789,14 @@ window.addEventListener('load', () => {
 
 function selectSkin() {
     if (window.game) {
+        const currentSkin = window.game.availableSkins[window.game.currentSkinIndex];
+        
+        // Check if skin is locked before proceeding
+        if (currentSkin.unlockScore > window.game.highScore) {
+            alert(`Unlock this skin by scoring ${currentSkin.unlockScore} points!`);
+            return; // Don't remove skins screen, just show alert
+        }
+        
         window.game.selectSkin();
         // Remove the skins screen after selection
         document.getElementById('skinsScreen')?.remove();
